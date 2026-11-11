@@ -1,0 +1,21 @@
+{
+  "name": "jpqamcp",
+  "version": "0.4.0",
+  "type": "module",
+  "private": true,
+  "description": "JPQAMCP — MCP de QA blackbox para Firefox: testa as telas como um usuário, sem acesso ao código (macOS, Windows e Linux)",
+  "bin": {
+    "jpqamcp": "server.mjs"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "build": "sh build.sh",
+    "postinstall": "node preparar.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "tesseract.js": "^6.0.1"
+  }
+}

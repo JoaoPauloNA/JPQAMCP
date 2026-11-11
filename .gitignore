@@ -1,0 +1,7 @@
+node_modules/
+saida/
+.tessdata/
+fxctl
+*.traineddata
+.perfil*/
+.DS_Store

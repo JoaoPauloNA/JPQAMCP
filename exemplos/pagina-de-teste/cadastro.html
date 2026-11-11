@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cadastro — QA Lab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div class="brand">QA<span>Lab</span><small>Sistema de gestão • v1.0</small></div>
+      <div class="menu-title">Principal</div>
+      <a class="mi" href="index.html" data-testid="nav-home">Dashboard</a>
+      <a class="mi active" href="cadastro.html" data-testid="menu-cadastro">Novo cadastro</a>
+      <a class="mi" href="#">Clientes</a>
+      <a class="mi" href="#">Pedidos <span class="count">3</span></a>
+      <div class="menu-title">Gestão</div>
+      <a class="mi" href="#">Financeiro</a>
+      <a class="mi" href="#">Relatórios</a>
+      <a class="mi" href="#">Estoque</a>
+      <div class="menu-title">Sistema</div>
+      <a class="mi" href="#">Configurações</a>
+      <a class="mi" href="#">Ajuda</a>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="crumbs">Início / Clientes / <b>Novo cadastro</b></div>
+        <div class="top-right">
+          <div class="bell">🔔<i>3</i></div>
+          <div class="user"><div class="avatar-c">MS</div><div>Maria Souza<small>Administradora</small></div></div>
+        </div>
+      </div>
+      <div class="content">
+  <div class="form-wrap">
+    <div class="page-head"><div><h1 data-testid="form-title">Novo cadastro</h1>
+    <p>Campos com <span style="color:var(--err)">*</span> são obrigatórios. Use apenas dados fictícios.</p></div></div>
+
+    <form id="form-cadastro" novalidate autocomplete="off">
+
+      <div class="fieldset">
+        <div class="legend">Dados pessoais</div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">Nome completo <span class="req">*</span></div>
+            <input type="text" id="nome" name="nome" data-testid="nome" placeholder="Maria da Silva" required minlength="3" maxlength="80">
+            <span class="error" data-error-for="nome"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Apelido (opcional)</div>
+            <input type="text" id="apelido" name="apelido" data-testid="apelido" placeholder="Mari">
+            <span class="error" data-error-for="apelido"></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">E-mail <span class="req">*</span></div>
+            <input type="email" id="email" name="email" data-testid="email" placeholder="maria@exemplo.com" required>
+            <span class="error" data-error-for="email"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Telefone <span class="req">*</span></div>
+            <input type="tel" id="telefone" name="telefone" data-testid="telefone" placeholder="(11) 91234-5678" data-mask="phone" required>
+            <span class="hint">Formato: (99) 99999-9999</span>
+            <span class="error" data-error-for="telefone"></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">CPF <span class="req">*</span></div>
+            <input type="text" id="cpf" name="cpf" data-testid="cpf" placeholder="000.000.000-00" data-mask="cpf" inputmode="numeric" required>
+            <span class="hint">Formato: 000.000.000-00 (valida dígitos)</span>
+            <span class="error" data-error-for="cpf"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Data de nascimento <span class="req">*</span></div>
+            <input type="date" id="nascimento" name="nascimento" data-testid="nascimento" required>
+            <span class="hint">Precisa ter 18 anos ou mais</span>
+            <span class="error" data-error-for="nascimento"></span>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Gênero <span class="req">*</span></span>
+          <div class="inline">
+            <span class="opt"><input type="radio" name="genero" value="feminino" data-testid="genero-feminino"> Feminino</span>
+            <span class="opt"><input type="radio" name="genero" value="masculino" data-testid="genero-masculino"> Masculino</span>
+            <span class="opt"><input type="radio" name="genero" value="outro" data-testid="genero-outro"> Outro</span>
+            <span class="opt"><input type="radio" name="genero" value="nao-informar" data-testid="genero-nao-informar"> Prefiro não informar</span>
+          </div>
+          <span class="error" data-error-for="genero"></span>
+        </div>
+      </div>
+
+      <div class="fieldset">
+        <div class="legend">Acesso</div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">Usuário <span class="req">*</span></div>
+            <input type="text" id="usuario" name="usuario" data-testid="usuario" placeholder="maria_silva" pattern="[a-z0-9_]{4,16}" required>
+            <span class="hint">4 a 16 caracteres: minúsculas, números e _</span>
+            <span class="error" data-error-for="usuario"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Site pessoal</div>
+            <input type="url" id="site" name="site" data-testid="site" placeholder="https://exemplo.com">
+            <span class="error" data-error-for="site"></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">Senha <span class="req">*</span></div>
+            <input type="password" id="senha" name="senha" data-testid="senha" required>
+            <span class="hint">Mín. 8 caracteres, com maiúscula, minúscula e número</span>
+            <span class="error" data-error-for="senha"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Confirmar senha <span class="req">*</span></div>
+            <input type="password" id="senha2" name="senha2" data-testid="senha2" required>
+            <span class="error" data-error-for="senha2"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fieldset">
+        <div class="legend">Endereço</div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">CEP <span class="req">*</span></div>
+            <input type="text" id="cep" name="cep" data-testid="cep" placeholder="00000-000" data-mask="cep" inputmode="numeric" required>
+            <span class="error" data-error-for="cep"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Logradouro</div>
+            <input type="text" id="logradouro" name="logradouro" data-testid="logradouro" placeholder="Rua das Flores">
+          </div>
+          <div class="field">
+            <div class="lbl">Número</div>
+            <input type="number" id="numero" name="numero" data-testid="numero" min="1" max="99999" step="1">
+            <span class="error" data-error-for="numero"></span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">País <span class="req">*</span></div>
+            <select id="pais" name="pais" data-testid="pais" required>
+              <option value="">Selecione…</option>
+              <option value="BR">Brasil</option>
+              <option value="PT">Portugal</option>
+              <option value="US">Estados Unidos</option>
+              <option value="AR">Argentina</option>
+              <option value="JP">Japão</option>
+            </select>
+            <span class="error" data-error-for="pais"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Estado</div>
+            <select id="estado" name="estado" data-testid="estado">
+              <optgroup label="Sudeste"><option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option></optgroup>
+              <optgroup label="Sul"><option value="PR">Paraná</option><option value="RS">Rio Grande do Sul</option><option value="SC">Santa Catarina</option></optgroup>
+            </select>
+          </div>
+          <div class="field">
+            <div class="lbl">Cidade (com sugestões)</div>
+            <input type="text" id="cidade" name="cidade" data-testid="cidade" list="lista-cidades" placeholder="Digite para sugerir">
+            <datalist id="lista-cidades">
+              <option value="São Paulo"><option value="Rio de Janeiro"><option value="Belo Horizonte">
+              <option value="Curitiba"><option value="Porto Alegre"><option value="Florianópolis">
+            </datalist>
+          </div>
+        </div>
+      </div>
+
+      <div class="fieldset">
+        <div class="legend">Datas, números e cores</div>
+        <div class="row">
+          <div class="field"><div class="lbl">Horário preferido</div><input type="time" id="hora" name="hora" data-testid="hora"></div>
+          <div class="field"><div class="lbl">Reunião (data e hora)</div><input type="datetime-local" id="reuniao" name="reuniao" data-testid="reuniao"></div>
+          <div class="field"><div class="lbl">Mês de início</div><input type="month" id="mes" name="mes" data-testid="mes"></div>
+          <div class="field"><div class="lbl">Semana</div><input type="week" id="semana" name="semana" data-testid="semana"></div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">Pretensão salarial (R$)</div>
+            <input type="text" id="salario" name="salario" data-testid="salario" placeholder="R$ 0,00" data-mask="money" inputmode="numeric">
+          </div>
+          <div class="field">
+            <div class="lbl">Quantidade de pets</div>
+            <input type="number" id="idade-pet" name="pets" data-testid="pets" min="0" max="20" value="0">
+            <span class="error" data-error-for="pets"></span>
+          </div>
+          <div class="field">
+            <div class="lbl">Nível de experiência: <span id="nivel-out" data-testid="nivel-out">5</span>/10</div>
+            <input type="range" id="nivel" name="nivel" data-testid="nivel" min="0" max="10" step="1" value="5">
+          </div>
+          <div class="field">
+            <div class="lbl">Cor favorita</div>
+            <input type="color" id="cor" name="cor" data-testid="cor" value="#6c8cff">
+          </div>
+        </div>
+        <div class="field">
+          <div class="lbl">Campo de busca</div>
+          <input type="search" id="busca" name="busca" data-testid="busca" placeholder="Pesquisar…">
+        </div>
+      </div>
+
+      <div class="fieldset">
+        <div class="legend">Preferências</div>
+        <div class="field">
+          <span class="lbl">Interesses (múltipla escolha)</span>
+          <div class="inline">
+            <span class="opt"><input type="checkbox" name="interesses" value="esportes" data-testid="int-esportes"> Esportes</span>
+            <span class="opt"><input type="checkbox" name="interesses" value="musica" data-testid="int-musica"> Música</span>
+            <span class="opt"><input type="checkbox" name="interesses" value="tecnologia" data-testid="int-tecnologia"> Tecnologia</span>
+            <span class="opt"><input type="checkbox" name="interesses" value="games" data-testid="int-games"> Games</span>
+            <span class="opt"><input type="checkbox" name="interesses" value="viagens" data-testid="int-viagens"> Viagens</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lbl">Idiomas (seleção múltipla — Cmd/Ctrl + clique)</div>
+          <select id="idiomas" name="idiomas" data-testid="idiomas" multiple size="4">
+            <option value="pt">Português</option><option value="en">Inglês</option>
+            <option value="es">Espanhol</option><option value="fr">Francês</option><option value="ja">Japonês</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="lbl">Receber novidades</span>
+          <div class="inline">
+            <span class="opt"><input type="checkbox" name="newsletter" id="newsletter" data-testid="newsletter"> Assinar newsletter</span>
+            <span class="opt"><input type="checkbox" name="sms" id="sms" data-testid="sms" disabled> SMS (desabilitado)</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="lbl">Plano</div>
+          <select id="plano" name="plano" data-testid="plano">
+            <option value="basico">Básico — R$ 0</option>
+            <option value="pro" selected>Pro — R$ 49,90</option>
+            <option value="empresa">Empresa — R$ 299,00</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="lbl">Campo somente leitura</div>
+          <input type="text" id="readonly" data-testid="readonly" value="Não editável" readonly>
+        </div>
+        <input type="hidden" name="origem" id="origem" value="pagina-de-teste">
+      </div>
+
+      <div class="fieldset">
+        <div class="legend">Texto e arquivos</div>
+        <div class="field">
+          <div class="lbl">Sobre você</div>
+          <textarea id="bio" name="bio" data-testid="bio" rows="4" maxlength="300" placeholder="Conte um pouco sobre você…"></textarea>
+          <span class="hint"><span id="bio-count" data-testid="bio-count">0</span>/300 caracteres</span>
+        </div>
+        <div class="row">
+          <div class="field">
+            <div class="lbl">Foto (imagem)</div>
+            <input type="file" id="avatar" name="avatar" data-testid="avatar" accept="image/*">
+          </div>
+          <div class="field">
+            <div class="lbl">Documentos (vários arquivos)</div>
+            <input type="file" id="docs" name="docs" data-testid="docs" multiple accept=".pdf,.doc,.docx,.txt">
+          </div>
+        </div>
+      </div>
+
+      <div class="fieldset">
+        <div class="legend">Termos</div>
+        <div class="field">
+          <span class="opt" style="display:flex;gap:8px;align-items:center;color:var(--text)">
+            <input type="checkbox" name="termos" id="termos" data-testid="termos"> Li e aceito os termos de uso <span class="req" style="color:var(--err)">*</span>
+          </span>
+          <span class="error" data-error-for="termos"></span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn" id="btn-enviar" data-testid="btn-enviar">Enviar cadastro</button>
+        <button type="reset" class="btn secondary" id="btn-limpar" data-testid="btn-limpar">Limpar</button>
+        <a class="btn secondary" href="index.html" data-testid="btn-cancelar">Cancelar</a>
+      </div>
+    </form>
+
+    <div id="resultado" data-testid="resultado">
+      <h2>Cadastro enviado com sucesso!</h2>
+      <p>Dados recebidos (apenas exibidos aqui, nada é enviado a servidor):</p>
+      <pre id="resultado-json" data-testid="resultado-json"></pre>
+    </div>
+  </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

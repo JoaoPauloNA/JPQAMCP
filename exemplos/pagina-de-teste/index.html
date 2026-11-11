@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QA Lab — Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div class="brand">QA<span>Lab</span><small>Sistema de gestão • v1.0</small></div>
+      <div class="menu-title">Principal</div>
+      <a class="mi active" href="index.html" data-testid="menu-dashboard">Dashboard</a>
+      <a class="mi" href="cadastro.html" data-testid="menu-cadastro">Novo cadastro</a>
+      <a class="mi" href="#" data-testid="menu-clientes">Clientes</a>
+      <a class="mi" href="#">Pedidos <span class="count">3</span></a>
+      <div class="menu-title">Gestão</div>
+      <a class="mi" href="#">Financeiro</a>
+      <a class="mi" href="#">Relatórios</a>
+      <a class="mi" href="#">Estoque</a>
+      <div class="menu-title">Sistema</div>
+      <a class="mi" href="#">Configurações</a>
+      <a class="mi" href="#">Ajuda</a>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="crumbs">Início / <b>Dashboard</b></div>
+        <div class="top-right">
+          <input type="search" id="busca-global" data-testid="busca-global" placeholder="Buscar clientes, pedidos…">
+          <div class="bell" data-testid="notificacoes">🔔<i>3</i></div>
+          <div class="user"><div class="avatar-c">MS</div><div>Maria Souza<small>Administradora</small></div></div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1 data-testid="hero-title">Dashboard</h1>
+            <p data-testid="hero-text">Resumo das operações de hoje, 11/11/2026.</p>
+          </div>
+          <div>
+            <button class="btn secondary" id="btn-saiba-mais" data-testid="btn-saiba-mais" type="button">Atualizar dados</button>
+            <a class="btn" id="btn-cadastro" data-testid="btn-cadastro" href="cadastro.html">+ Novo cadastro</a>
+          </div>
+        </div>
+
+        <div class="toast" id="saiba-mais-msg" data-testid="saiba-mais-msg">Dados atualizados com sucesso às 14:32.</div>
+
+        <div class="grid g4">
+          <div class="card kpi"><div class="lab">Clientes ativos</div><strong data-testid="stat-usuarios">12.847</strong><span class="delta up">▲ 4,2% no mês</span></div>
+          <div class="card kpi"><div class="lab">Pedidos hoje</div><strong data-testid="stat-testes">3.592</strong><span class="delta up">▲ 12,8% vs ontem</span></div>
+          <div class="card kpi"><div class="lab">Taxa de sucesso</div><strong data-testid="stat-taxa">98,4%</strong><span class="delta down">▼ 0,3% na semana</span></div>
+          <div class="card kpi"><div class="lab">Faturamento</div><strong data-testid="stat-tempo">R$ 148.920,50</strong><span class="delta up">▲ 7,1% no mês</span></div>
+        </div>
+
+        <div class="grid g2 section">
+          <div class="card">
+            <h3>Últimos cadastros</h3>
+            <table data-testid="tabela-status">
+              <thead><tr><th>#</th><th>Cliente</th><th>E-mail</th><th>Plano</th><th>Status</th><th>Ação</th></tr></thead>
+              <tbody>
+                <tr><td>1042</td><td>Ana Beatriz Lima</td><td>ana.lima@exemplo.com</td><td>Pro</td><td><span class="tag ok">Ativo</span></td><td><button class="btn secondary small" type="button">Ver</button></td></tr>
+                <tr><td>1041</td><td>Carlos Eduardo Reis</td><td>carlos.reis@exemplo.com</td><td>Básico</td><td><span class="tag warn">Pendente</span></td><td><button class="btn secondary small" type="button">Ver</button></td></tr>
+                <tr><td>1040</td><td>Fernanda Alves</td><td>fer.alves@exemplo.com</td><td>Empresa</td><td><span class="tag ok">Ativo</span></td><td><button class="btn secondary small" type="button">Ver</button></td></tr>
+                <tr><td>1039</td><td>João Pedro Santos</td><td>jp.santos@exemplo.com</td><td>Pro</td><td><span class="tag err">Bloqueado</span></td><td><button class="btn secondary small" type="button">Ver</button></td></tr>
+                <tr><td>1038</td><td>Luciana Prado</td><td>lu.prado@exemplo.com</td><td>Básico</td><td><span class="tag ok">Ativo</span></td><td><button class="btn secondary small" type="button">Ver</button></td></tr>
+              </tbody>
+            </table>
+            <div class="table-foot"><span>Mostrando 1–5 de 1.042</span><div class="pager"><span>‹</span><span class="on">1</span><span>2</span><span>3</span><span>›</span></div></div>
+          </div>
+
+          <div class="card">
+            <h3>Atividade recente</h3>
+            <div class="feed">
+              <div>Pedido #8841 aprovado<small>há 3 minutos • Ana Beatriz</small></div>
+              <div>Novo cliente cadastrado<small>há 18 minutos • Carlos Reis</small></div>
+              <div>Pagamento recusado<small>há 42 minutos • João Santos</small></div>
+              <div>Relatório mensal gerado<small>há 1 hora • Sistema</small></div>
+              <div>Backup concluído<small>há 3 horas • Sistema</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid g2 section">
+          <div class="card">
+            <h3>Vendas por mês (R$ mil)</h3>
+            <div class="bars">
+              <div><i style="height:45%"></i>Jun<br>72</div><div><i style="height:58%"></i>Jul<br>93</div>
+              <div><i style="height:52%"></i>Ago<br>84</div><div><i style="height:70%"></i>Set<br>112</div>
+              <div><i style="height:84%"></i>Out<br>134</div><div><i style="height:93%"></i>Nov<br>149</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Avisos do sistema</h3>
+            <details data-testid="faq-1"><summary>Manutenção programada</summary><p>Sábado, 14/11, das 02h às 04h. O sistema ficará indisponível.</p></details>
+            <details data-testid="faq-2"><summary>Nova política de senhas</summary><p>A partir de dezembro, senhas devem ter no mínimo 8 caracteres.</p></details>
+            <details data-testid="faq-3"><summary>Módulo financeiro instável</summary><p>O serviço de pagamentos apresenta lentidão. Equipe investigando.</p></details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('btn-saiba-mais').addEventListener('click', function () {
+      document.getElementById('saiba-mais-msg').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
