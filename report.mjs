@@ -15,14 +15,13 @@ export function relatorioQA(res) {
   const todosBotoes = res.telas.flatMap((t) => t.botoes);
   const forms = res.telas.filter((t) => t.form?.enviar);
   const camposTot = res.telas.reduce((n, t) => n + (t.form?.campos?.length ?? 0), 0);
-  const meta = res.totalMs <= 5000;
   const veredito = { reagiu: ["ok", "Reagiu"], navegou: ["ok", "Navegou"], sem_reacao: ["warn", "Sem reação visível"] };
 
   const si = res.sessaoInfo;
   const avisosHtml = [
     si && (si.usada
       ? `<div class="aviso ok">Sessão do seu Firefox usada: aba “${esc(si.aba.titulo)}” (janela ${si.aba.janela}, aba ${si.aba.aba}; ${esc(si.motivo)}). Cookies e dados do site foram copiados para instâncias temporárias, que são apagadas ao fim. Nenhum valor é gravado no relatório.</div>`
-      : si.aviso ? `<div class="aviso">Sem sessão do usuário: ${esc(si.aviso)}</div>` : ""),
+      : ""),
     ...(res.avisos ?? []).map((a) => `<div class="aviso">⚠ ${esc(a)}</div>`),
   ].filter(Boolean).join("");
   const eventos = [];
@@ -96,7 +95,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:7px 9px;border-bottom:1p
 <p><small>Gerado às ${esc(res.hora)} · motor de imagem: ${esc(res.backend ?? "")} · sistema: ${esc(res.sistema ?? "")} · ponto de partida ${esc(decodeURI(res.urlInicial))} · somente telas (pixels) e cliques/digitação reais num Firefox invisível, sem acesso ao código</small></p>
 ${avisosHtml}
 <div class="kpis">
-<div class="card"><b>${(res.totalMs / 1000).toFixed(1)} s</b><span>tempo do teste completo ${meta ? "(dentro da meta de 5 s)" : "(meta de 5 s não atingida)"}</span></div>
+<div class="card"><b>${(res.totalMs / 1000).toFixed(1)} s</b><span>tempo do teste completo</span></div>
 <div class="card"><b>${res.telas.length}</b><span>telas exploradas</span></div>
 <div class="card"><b>${todosBotoes.length}</b><span>botões/itens clicados</span></div>
 <div class="card"><b>${camposTot}</b><span>campos identificados</span></div>

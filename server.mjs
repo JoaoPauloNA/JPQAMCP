@@ -79,10 +79,10 @@ async function chamar(nome, a = {}) {
     if (!url) throw new Error(`não sei qual página testar. ${r.info.aviso || "Abra a página no Firefox ou informe 'url'."}`);
     const res = await executarQA({ url, dirBase: SAIDA, modo: a.modo ?? "completo", maxTelas: a.maxTelas ?? 5, sessao: r.copia, sessaoInfo: r.info, zoom: a.zoom !== false });
     const out = relatorioQA(res);
-    const sess = res.sessaoInfo ? (res.sessaoInfo.usada ? `sessão copiada da aba “${res.sessaoInfo.aba.titulo}” (janela ${res.sessaoInfo.aba.janela}, aba ${res.sessaoInfo.aba.aba}; ${res.sessaoInfo.motivo})` : `sem sessão: ${res.sessaoInfo.aviso || res.sessaoInfo.modo}`) : "";
+    const sess = res.sessaoInfo ? (res.sessaoInfo.usada ? `sessão copiada da aba “${res.sessaoInfo.aba.titulo}” (janela ${res.sessaoInfo.aba.janela}, aba ${res.sessaoInfo.aba.aba}; ${res.sessaoInfo.motivo})` : "") : "";
     const linhas = res.telas.map((t, i) => `tela ${i + 1}: ${t.titulo} — ${t.botoes.length} botões clicados, ${t.form ? `${t.form.campos.length} campos, formulário testado` : "sem formulário"}`);
     const bugs = res.bugs.map((b) => `${b.hora} [${b.sev}] ${b.titulo}`);
-    return [{ type: "text", text: `Relatório: ${out}\nTempo do teste: ${res.totalMs} ms${res.fases.aquecimentoMs ? ` (+ ${res.fases.aquecimentoMs} ms de aquecimento, só nesta primeira vez)` : ""} — meta de 5 s ${res.totalMs <= 5000 ? "atingida" : "NÃO atingida"} · motor: ${res.backend}\n${sess}${res.avisos.length ? "\nAVISO: " + res.avisos.join(" ") : ""}\n${linhas.join("\n")}\n\nBugs (${bugs.length}):\n${bugs.join("\n") || "(nenhum)"}` }];
+    return [{ type: "text", text: `Relatório: ${out}\nTempo do teste: ${res.totalMs} ms · motor: ${res.backend}\n${sess}${res.avisos.length ? "\nAVISO: " + res.avisos.join(" ") : ""}\n${linhas.join("\n")}\n\nBugs (${bugs.length}):\n${bugs.join("\n") || "(nenhum)"}` }];
   }
   if (nome === "firefox_screenshot") {
     const dir = join(SAIDA, stamp());
