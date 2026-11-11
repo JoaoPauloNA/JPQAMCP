@@ -54,3 +54,13 @@ Com o computador livre: ~4–5 s no motor nativo sem zoom e ~10 s no portátil. 
 - A cópia de sessão não cobre sites que prendem o login à aba ou ao dispositivo.
 - Em sistemas reais o teste clica e envia formulários de verdade: prefira ambiente de teste.
 - Testado em macOS. Windows e Linux: só o motor portátil, forçado no macOS.
+
+## Evidências e cobertura
+
+Os resultados distinguem **suspeitas** e **inconclusivos**. Uma tela sem mudança após um clique não comprova defeito: o controle pode estar selecionado ou não ter efeito visual previsto. O teste aguarda mais 1,2 s e, para ações sem indicação de envio ou exclusão no rótulo, reabre a página e repete o clique com mais 1,2 s de espera. Essa verificação pode aumentar a duração da execução. Rótulos não garantem que uma ação seja inofensiva; use ambiente de teste.
+
+Cada achado inclui URL, estado inicial, passos, observação, expectativa quando conhecida e imagens. A cobertura mostra cenários executados e não executados, controles ignorados, campos não suportados e URLs descobertas que excederam o limite de telas. Ela descreve apenas o que foi identificado nesta rodada; não comprova cobertura total do projeto.
+
+O `resultado.json` usa `schemaVersion: 2`. O campo `bugs` permanece por compatibilidade, com `status` em cada achado. Caminhos de artefatos são relativos à pasta do relatório; copie a pasta inteira para preservar as evidências. Para gerar novamente o HTML após mover a pasta, carregue o JSON e ajuste `dir` para a pasta atual antes de chamar `relatorioQA`.
+
+Execute `npm test` para verificar cobertura e portabilidade dos relatórios.

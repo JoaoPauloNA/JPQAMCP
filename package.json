@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node server.mjs",
     "build": "sh build.sh",
-    "postinstall": "node preparar.mjs"
+    "postinstall": "node preparar.mjs",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"

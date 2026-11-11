@@ -1,17 +1,17 @@
 // Relatório HTML do QA completo (qa.mjs): bugs por hora, telas, botões, formulário e linha do tempo.
 import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, isAbsolute } from "node:path";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-let MINI = {};
-const b64 = (f) => { const m = MINI[f]; if (!m) return ""; try { return `data:image/${m.endsWith(".png") ? "png" : "jpeg"};base64,${readFileSync(m).toString("base64")}`; } catch { return ""; } };
+let MINI = {}, BASE = ".";
+const b64 = (f) => { const m = MINI[f]; if (!m) return ""; try { return `data:image/${m.endsWith(".png") ? "png" : "jpeg"};base64,${readFileSync(isAbsolute(m) ? m : join(BASE, m)).toString("base64")}`; } catch { return ""; } };
 // ================= relatório do QA completo (qa.mjs) =================
 const th = (f, leg) => f ? `<figure><img src="${b64(f)}"><figcaption>${esc(leg)}</figcaption></figure>` : "";
 const ZOOM_X = 3;
 const sevCls = { alta: "bad", média: "warn", baixa: "mute" };
 
 export function relatorioQA(res) {
-  MINI = res.mini ?? {};
+  MINI = res.mini ?? {}; BASE = res.dir;
   const todosBotoes = res.telas.flatMap((t) => t.botoes);
   const forms = res.telas.filter((t) => t.form?.enviar);
   const camposTot = res.telas.reduce((n, t) => n + (t.form?.campos?.length ?? 0), 0);
@@ -37,8 +37,8 @@ export function relatorioQA(res) {
   eventos.sort((a, b) => a[0].localeCompare(b[0]));
 
   const bugsHtml = res.bugs.length
-    ? `<table><thead><tr><th>Hora</th><th>Gravidade</th><th>Tela</th><th>Bug</th><th>Detalhe</th></tr></thead><tbody>${res.bugs.map((b) => `<tr><td>${esc(b.hora)}</td><td><span class="tag ${sevCls[b.sev] ?? "mute"}">${b.sev}</span></td><td>${esc(b.tela)}</td><td>${esc(b.titulo)}</td><td>${esc(b.detalhe)}</td></tr>`).join("")}</tbody></table>`
-    : "<p>Nenhum bug localizado.</p>";
+    ? `<table><thead><tr><th>Hora</th><th>Gravidade</th><th>Tela</th><th>Achado</th><th>Detalhe</th></tr></thead><tbody>${res.bugs.map((b) => `<tr><td>${esc(b.hora)}</td><td><span class="tag ${sevCls[b.sev] ?? "mute"}">${b.sev}</span></td><td>${esc(b.tela)}</td><td>${esc(b.titulo)}<br><span class="tag warn">${esc(b.status ?? "suspeita")}</span></td><td>${esc(b.detalhe)}<br><b>Esperado:</b> ${esc(b.esperado)}<br><b>Reprodução:</b> ${esc(b.reproducao?.url)}<br>${(b.reproducao?.passos ?? []).map(esc).join("<br>")}<br>${(b.reproducao?.dadosTeste ?? []).map((d) => `${esc(d.campo)}: ${esc(d.valor)}`).join("; ")}<div class="thumbs">${(b.evidencias ?? []).map((f, i) => th(f, `evidência ${i + 1}`)).join("")}</div></td></tr>`).join("")}</tbody></table>`
+    : "<p>Nenhuma suspeita localizada nos cenários executados.</p>";
 
   const telasHtml = res.telas.map((t, i) => {
     const linhas = t.botoes.map((b) => {
@@ -77,6 +77,11 @@ export function relatorioQA(res) {
       <div class="card" style="margin-top:12px">${formHtml || "<p>Sem formulário nesta tela.</p>"}</div>`;
   }).join("");
 
+  const C = res.cobertura;
+  const coberturaHtml = C ? `<h2>Cobertura desta execução</h2><div class="card"><p>${C.telasTestadas} telas · ${C.botoesTestados} controles clicados · ${C.inconclusivos} cliques inconclusivos · limite de ${C.limiteTelas} telas.</p>
+    <p>Telas descobertas não visitadas: ${C.telasNaoVisitadas.map(esc).join(", ") || "nenhuma"}.</p>
+    ${C.porTela.map((t) => `<p><b>${esc(t.titulo)}</b>: cenários executados ${t.cenariosExecutados.map(esc).join(", ") || "nenhum"}; não executados ${t.cenariosNaoExecutados.map(esc).join(", ") || "nenhum"}. Controles não testados: ${t.controlesNaoTestados.map((e) => esc(e.texto || e.id)).join(", ") || "nenhum"}. Campos não suportados: ${t.camposNaoSuportados.map((e) => esc(e.rotulo || e.tipo)).join(", ") || "nenhum"}.${t.zoomParcial ? " Zoom incompleto." : ""}</p>`).join("")}
+    <p>A: envio vazio · B: preenchimento e envio · C: valores inválidos · limpar: restauração do formulário.</p><ul>${C.limites.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
   const fases = res.fases ?? {};
   const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório de QA — ${esc(res.hora)}</title>
 <style>
@@ -99,10 +104,11 @@ ${avisosHtml}
 <div class="card"><b>${res.telas.length}</b><span>telas exploradas</span></div>
 <div class="card"><b>${todosBotoes.length}</b><span>botões/itens clicados</span></div>
 <div class="card"><b>${camposTot}</b><span>campos identificados</span></div>
-<div class="card"><b>${forms.length}</b><span>formulários testados (4 cenários)</span></div>
-<div class="card"><b>${res.bugs.length}</b><span>bugs localizados</span></div>
+<div class="card"><b>${forms.length}</b><span>formulários com envio identificado</span></div>
+<div class="card"><b>${res.bugs.length}</b><span>achados para revisão</span></div>
 </div>
-<h2>Bugs localizados (por hora)</h2><div class="card">${bugsHtml}</div>
+${coberturaHtml}
+<h2>Achados para revisão (por hora)</h2><div class="card">${bugsHtml}</div>
 ${telasHtml}
 <h2>Linha do tempo</h2><div class="card"><table><thead><tr><th>Hora</th><th>Ação</th><th>Duração</th></tr></thead><tbody>${eventos.map((e) => `<tr><td>${esc(e[0])}</td><td>${esc(e[1])}</td><td>${esc(e[2])}</td></tr>`).join("")}</tbody></table></div>
 <h2>Tempos</h2><div class="card"><p><small>Instâncias do Firefox já abertas (aquecimento: ${fases.aquecimentoMs ?? 0} ms, só na primeira execução). Fases em ms desde o início: ${Object.entries(fases).filter(([k]) => k !== "trace" && k !== "aquecimentoMs").map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}.</small></p></div>

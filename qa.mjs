@@ -6,6 +6,8 @@ import { abrirInstancia, fecharInstancia, KEY } from "./marionette.mjs";
 import * as img from "./imagem.mjs";
 import { perfilAtivo, abasAbertas, localizarAba, resumo } from "./sessao.mjs";
 
+import { portatil, cobertura } from "./evidencias.mjs";
+
 const hora = () => { const d = new Date(); return d.toTimeString().slice(0, 8) + "." + String(d.getMilliseconds()).padStart(3, "0"); };
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 const norm = (u) => String(u).split("#")[0];
@@ -155,14 +157,29 @@ async function testarBotoes(w, tela, alvos, novaTela) {
     await esperar(45);
     let est = await w.estado();
     for (let i = 0; i < 12 && norm(est[0]) !== norm(urlOrig) && est[1] !== "complete"; i++) { await esperar(30); est = await w.estado(); }
-    const depois = await w.print(false);
-    const navegou = norm(est[0]) !== norm(urlOrig);
+    let depois = await w.print(false);
+    const tentativas = [];
+    const idx = tela.botoes.length + 1;
+    // Espera adicional antes de repetir: ações lentas não são classificadas cedo demais.
+    if (est[0] === urlOrig && depois === base) {
+      await esperar(1200); est = await w.estado(); depois = await w.print(false);
+      tentativas.push({ esperaMs: 1200, arqAntes: registrar(tela, `b${idx}_${e.id}_t1_antes`, base), arqDepois: registrar(tela, `b${idx}_${e.id}_t1_depois`, depois) });
+      // Envios e ações destrutivas não são repetidos automaticamente.
+      if (est[0] === urlOrig && depois === base && !/enviar|salvar|confirmar|comprar|pagar|excluir|deletar|remover|finalizar/i.test(e.text)) {
+        await prepararTela(w, tela.url, tela.alturaExterna);
+        base = await estavel(w, 100);
+        await w.clicar(e.cx, e.cy); await w.mover(2, 2); await esperar(1200);
+        est = await w.estado(); depois = await w.print(false);
+        tentativas.push({ esperaMs: 1200, arqAntes: registrar(tela, `b${idx}_${e.id}_t2_antes`, base), arqDepois: registrar(tela, `b${idx}_${e.id}_t2_depois`, depois) });
+      }
+    }
+    const navegou = est[0] !== urlOrig;
     const real = navegou || depois !== base;
     const reagirMs = Date.now() - t0;
-    const passo = { elemento: e, hora: h0, navegou, urlDepois: est[0], real, reagirMs, restaurou: true };
+    const passo = { elemento: e, hora: h0, navegou, urlDepois: est[0], real, reagirMs, tentativas, restaurou: true };
     if (navegou) { passo.tituloDepois = await w.titulo(); novaTela?.(est[0]); }
-    const idx = tela.botoes.length + 1;
-    if (real) { passo.arqAntes = registrar(tela, `b${idx}_${e.id}_antes`, base); passo.arqDepois = registrar(tela, `b${idx}_${e.id}_depois`, depois, { ocr: true }); }
+    passo.arqAntes = registrar(tela, `b${idx}_${e.id}_antes`, base);
+    passo.arqDepois = registrar(tela, `b${idx}_${e.id}_depois`, depois, { ocr: true });
     const r0 = Date.now();
     if (navegou) await w.voltar(); else if (real) await w.recarregar();
     if (real) { const r = await restaurado(w, base); if (!r.ok) { passo.restaurou = false; base = r.re; } }
@@ -194,7 +211,7 @@ function passosPreencher(campos, marcaveis, modo) {   // modo: "valido" | "inval
     else if (c.tipo === "selecao") {   // clicar abre um popup que engole teclas: foca por Tab e troca com a seta
       if (ult === "texto" || ult === "select") p.push({ k: [KEY.TAB] }, { k: [KEY.ARROW_RIGHT] });
       else if (prev) p.push({ c: [prev.cx, prev.cy] }, { k: [KEY.TAB] }, { k: [KEY.ARROW_RIGHT] });
-      else continue;
+      else { nao.push(c); continue; }
       ult = "select";
     } else { nao.push(c); ult = null; }
   }
@@ -296,7 +313,7 @@ async function posAnalise(telas) {
       b.veredito = b.navegou ? "navegou" : b.real ? "reagiu" : "sem_reacao";
       b.notas = [];
       if (b.real && !b.restaurou) b.notas.push("a tela não voltou ao estado anterior depois do teste");
-      if (b.reagirMs > 1000) b.notas.push(`resposta lenta (${b.reagirMs} ms)`);
+      if (b.real && b.tentativas.length === 0 && b.reagirMs > 1000) b.notas.push(`resposta lenta (${b.reagirMs} ms)`);
       if (b.navegou && /404|not found|não foi possível|unable to connect|server not found|problema ao carregar/i.test(b.textosNovos.join(" "))) b.notas.push("a tela de destino parece ser uma página de erro");
     }
     if (t.form) avaliarFormulario(t, ocr, conhecidos);
@@ -339,22 +356,32 @@ function avaliarFormulario(t, ocr, conhecidos) {
 // ---------------- bugs ----------------
 function bugs(telas) {
   const B = [];
-  const add = (hora, sev, tela, titulo, detalhe = "") => B.push({ hora, sev, tela: tela.titulo || tela.url, titulo, detalhe });
+  const add = (hora, sev, tela, titulo, detalhe = "", contexto = {}) => B.push({ hora, sev, tela: tela.titulo || tela.url, titulo, detalhe,
+    status: "suspeita", esperado: "Não especificado por requisito; revisar a evidência visual.",
+    reproducao: { url: tela.url, estadoInicial: "Página carregada em instância de teste", passos: ["Abrir a URL", ...(/vazio|obrigatoriedade/.test(titulo) ? ["Manter os campos vazios", `Clicar em ${tela.form?.enviar?.text ?? "enviar"}`] : /inválido/.test(titulo) ? ["Preencher os campos com os dados de teste", "Substituir pelo valor inválido indicado no achado", `Clicar em ${tela.form?.enviar?.text ?? "enviar"}`] : ["Preencher os campos com os dados de teste", titulo.includes("início") ? `Clicar em ${tela.form?.limpar?.text ?? "Limpar"}` : "Executar a ação indicada no achado"]), "Comparar as evidências"], dadosTeste: (tela.form?.campos ?? []).filter((c) => AMOSTRA[c.tipo]).map((c) => ({ campo: c.rotulo, valor: AMOSTRA[c.tipo][0] })), observado: detalhe || titulo },
+    evidencias: Object.values(tela.form?.shots ?? {}), ...contexto });
   for (const t of telas) {
     for (const b of t.botoes) {
       const e = b.elemento; const nome = `“${e.text}” (x=${e.cx}, y=${e.cy})`;
-      if (b.veredito === "sem_reacao" && e.kind === "botao" && !LIMPAR.test(e.text) && !/^MS$/.test(e.text)) add(b.hora, "média", t, `Botão ${nome} não mostra reação ao clique`, `Nenhuma mudança na tela nem na URL em ${b.reagirMs} ms.`);
-      for (const n of b.notas) add(b.hora, /erro|não voltou/.test(n) ? "alta" : "baixa", t, `${nome}: ${n}`);
+      if (b.veredito === "sem_reacao" && e.kind === "botao" && !LIMPAR.test(e.text) && !/^MS$/.test(e.text)) add(b.hora, "média", t, `Botão ${nome} não mostra reação ao clique`, `Nenhuma mudança observada após ${b.tentativas?.length ?? 1} observação(ões), em ${b.reagirMs} ms; pode ser uma ação sem efeito visual esperado.`, {
+        status: "inconclusivo", esperado: "Depende do requisito do controle; uma opção já selecionada pode não mudar a tela.",
+        reproducao: { url: t.url, estadoInicial: "Página carregada; sem preenchimento prévio", passos: [`Clicar em ${nome}`, "Retirar o ponteiro e aguardar 1200 ms", ...(b.tentativas?.length > 1 ? ["Reabrir a URL e repetir o clique, aguardando mais 1200 ms"] : [])], observado: "Nenhuma mudança visual ou de URL" },
+        evidencias: [b.arqAntes, b.arqDepois, ...(b.tentativas ?? []).flatMap((x) => [x.arqAntes, x.arqDepois])].filter(Boolean),
+      });
+      for (const n of b.notas) add(b.hora, /erro|não voltou/.test(n) ? "alta" : "baixa", t, `${nome}: ${n}`, n, {
+        reproducao: { url: t.url, estadoInicial: "Página carregada", passos: ["Abrir a URL", `Clicar em ${nome}`, "Aguardar e comparar a tela de destino e a restauração"], observado: n },
+        evidencias: [b.arqAntes, b.arqDepois],
+      });
     }
     const F = t.form; if (!F) continue;
     const R = F.resultados; if (!R) continue;
-    for (const o of R.obrigatorios) if (!o.ok) add(F.cenarios.A?.hora ?? F.hora, "alta", t, `Campo obrigatório “${o.campo.rotulo}” aceita envio vazio sem mensagem`);
+    for (const o of R.obrigatorios) if (F.cenarios.A && !o.ok) add(F.cenarios.A?.hora ?? F.hora, "alta", t, `Mensagem de obrigatoriedade não detectada em “${o.campo.rotulo}” após envio vazio`);
     for (const c of R.campos) {
-      if (c.aceitou === false) add(F.cenarios.B?.hora ?? F.hora, "alta", t, `Campo “${c.campo.rotulo}” não aceitou o valor digitado`, `esperado “${c.esperado}”, lido “${c.lido}”`);
+      if (F.cenarios.B && c.aceitou === false) add(F.cenarios.B?.hora ?? F.hora, "alta", t, `Campo “${c.campo.rotulo}” não aceitou o valor digitado`, `esperado “${c.esperado}”, lido “${c.lido}”`);
       else if (c.mascaraOk === false && c.aceitou) add(F.cenarios.B?.hora ?? F.hora, "média", t, `Campo “${c.campo.rotulo}” mostra formato diferente do esperado`, `esperado “${c.esperado}”, lido “${c.lido}”`);
     }
-    for (const i of R.invalidos) if (!i.ok) add(F.cenarios.C?.hora ?? F.hora, "alta", t, `Valor inválido “${i.valor}” aceito em “${i.campo.rotulo}” sem aviso`);
-    if (F.enviar && !R.envio.sucesso) add(F.cenarios.B?.enviar?.hora ?? F.hora, "alta", t, "Envio com dados válidos não mostrou confirmação de sucesso", R.envio.erros.length ? `Mensagens: ${R.envio.erros.join(" | ")}` : "");
+    for (const i of R.invalidos) if (F.cenarios.C && !i.ok) add(F.cenarios.C?.hora ?? F.hora, "alta", t, `Aviso não detectado para o valor inválido “${i.valor}” em “${i.campo.rotulo}”`);
+    if (F.cenarios.B?.enviar && !R.envio.sucesso) add(F.cenarios.B?.enviar?.hora ?? F.hora, "alta", t, "Envio com dados válidos não mostrou confirmação de sucesso", R.envio.erros.length ? `Mensagens: ${R.envio.erros.join(" | ")}` : "");
     if (F.cenarios.limpar && !F.cenarios.limpar.igualVazio) add(F.cenarios.limpar.hora, "média", t, `Botão “${F.limpar.text}” não deixou o formulário como no início`);
   }
   return B.sort((a, b) => a.hora.localeCompare(b.hora));
@@ -382,13 +409,14 @@ export async function executarQA({ url, dirBase, maxTelas = 5, modo = "completo"
   OCR.clear(); MINI.clear(); PEND.length = 0;
   const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   const dir = join(dirBase, stamp); mkdirSync(dir, { recursive: true });
-  const telas = []; const visit = new Set();
+  const telas = []; const visit = new Set(); const pendentes = new Set();
   const fila = []; let ativos = 0, zoomAtivos = 0, ociosoDesde = 0; const ctls = [];
   const trace = [];
   const enfileirar = (t, frente = false, nome = "tarefa") => { t.nome = nome; frente ? fila.unshift(t) : fila.push(t); };
 
   const novaTela = (u) => {                       // descoberta durante os cliques: já mapeia em paralelo
-    if (!/^(file|https?):/.test(u) || visit.has(norm(u)) || visit.size >= maxTelas) return;
+    if (!/^(file|https?):/.test(u) || visit.has(norm(u))) return;
+    if (visit.size >= maxTelas) { pendentes.add(u); return; }
     visit.add(norm(u)); enfileirar((w) => mapearEAgendar(w, u), true, "mapear " + u.split("/").pop());
   };
   const mapearEAgendar = async (w, u) => {
@@ -438,6 +466,8 @@ export async function executarQA({ url, dirBase, maxTelas = 5, modo = "completo"
   const lista = bugs(telas);
   fases.trace = trace;
   const res = { hora: hora(), urlInicial: url, totalMs: Date.now() - T1, backend: img.nomeBackend, sistema: process.platform, modo, zoom, sessaoInfo: sessaoInfo && { ...sessaoInfo, copia: pool[0]?.copiaSessao ? { site: pool[0].copiaSessao.host, cookiesCopiados: !!pool[0].copiaSessao.cookies, origensStorage: pool[0].copiaSessao.storage, cookiesDeSessao: pool[0].copiaSessao.sessao?.length ?? 0 } : null }, avisos, mini: Object.fromEntries(MINI), fases, telas: telas.map(({ base, ...r }) => r), bugs: lista, dir };
-  writeFileSync(join(dir, "resultado.json"), JSON.stringify(res, null, 1));
+  res.cobertura = cobertura(telas, pendentes, modo, maxTelas);
+  res.schemaVersion = 2;
+  writeFileSync(join(dir, "resultado.json"), JSON.stringify(portatil(res, dir), null, 1));
   return res;
 }

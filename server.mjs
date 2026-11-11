@@ -81,8 +81,8 @@ async function chamar(nome, a = {}) {
     const out = relatorioQA(res);
     const sess = res.sessaoInfo ? (res.sessaoInfo.usada ? `sessão copiada da aba “${res.sessaoInfo.aba.titulo}” (janela ${res.sessaoInfo.aba.janela}, aba ${res.sessaoInfo.aba.aba}; ${res.sessaoInfo.motivo})` : "") : "";
     const linhas = res.telas.map((t, i) => `tela ${i + 1}: ${t.titulo} — ${t.botoes.length} botões clicados, ${t.form ? `${t.form.campos.length} campos, formulário testado` : "sem formulário"}`);
-    const bugs = res.bugs.map((b) => `${b.hora} [${b.sev}] ${b.titulo}`);
-    return [{ type: "text", text: `Relatório: ${out}\nTempo do teste: ${res.totalMs} ms · motor: ${res.backend}\n${sess}${res.avisos.length ? "\nAVISO: " + res.avisos.join(" ") : ""}\n${linhas.join("\n")}\n\nBugs (${bugs.length}):\n${bugs.join("\n") || "(nenhum)"}` }];
+    const bugs = res.bugs.map((b) => `${b.hora} [${b.status ?? "suspeita"}; ${b.sev}] ${b.titulo}`);
+    return [{ type: "text", text: `Relatório: ${out}\nTempo do teste: ${res.totalMs} ms · motor: ${res.backend}\n${sess}${res.avisos.length ? "\nAVISO: " + res.avisos.join(" ") : ""}\n${linhas.join("\n")}\nCobertura: ${res.cobertura.botoesTestados} controles clicados; ${res.cobertura.inconclusivos} inconclusivos; ${res.cobertura.telasNaoVisitadas.length} telas descobertas não visitadas. Veja cenários e controles não testados no relatório.\n\nAchados para revisão (${bugs.length}):\n${bugs.join("\n") || "(nenhum)"}` }];
   }
   if (nome === "firefox_screenshot") {
     const dir = join(SAIDA, stamp());
