@@ -41,3 +41,16 @@ test('artefatos continuam legíveis após mover pasta e remover origem', () => {
   assert(!html.includes('meta de 5 s'));
  } finally {rmSync(raiz,{recursive:true,force:true});rmSync(destino,{recursive:true,force:true});}
 });
+
+test('falha real do MCP aparece no HTML sem aviso de meta de tempo', () => {
+ const dir=mkdtempSync(join(tmpdir(),'qa-erro-'));
+ try {
+  const base={dir,urlInicial:'http://localhost',hora:'12:00',totalMs:5100,telas:[],bugs:[],sessaoInfo:{usada:false,erro:{codigo:'EPERM',mensagem:'Leitura negada'}}};
+  const html=readFileSync(relatorioQA(base),'utf8');
+  assert(html.includes('Erro do MCP [EPERM]'));
+  assert(html.includes('Leitura negada'));
+  assert(!html.includes('meta de 5 s'));
+  base.sessaoInfo={usada:false,aviso:'nenhuma aba correspondente'};
+  assert(!readFileSync(relatorioQA(base),'utf8').includes('Erro do MCP'));
+ } finally {rmSync(dir,{recursive:true,force:true});}
+});

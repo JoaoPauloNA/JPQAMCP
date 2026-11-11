@@ -64,3 +64,9 @@ Cada achado inclui URL, estado inicial, passos, observação, expectativa quando
 O `resultado.json` usa `schemaVersion: 2`. O campo `bugs` permanece por compatibilidade, com `status` em cada achado. Caminhos de artefatos são relativos à pasta do relatório; copie a pasta inteira para preservar as evidências. Para gerar novamente o HTML após mover a pasta, carregue o JSON e ajuste `dir` para a pasta atual antes de chamar `relatorioQA`.
 
 Execute `npm test` para verificar cobertura e portabilidade dos relatórios.
+
+### Falhas de acesso ao perfil
+
+Falhas reais de leitura do perfil aparecem como **Erro do MCP**, com código do sistema, no resumo e no HTML. O teste pode continuar sem a sessão, mas não comprova fluxos autenticados. A ausência de uma aba correspondente, por si só, não é tratada como erro de permissão.
+
+No macOS, se houver `EPERM` ou `EACCES`, autorize o aplicativo que inicia o MCP em Ajustes do Sistema → Privacidade e Segurança → Acesso Total ao Disco e reinicie o aplicativo. Essa autorização depende do usuário. `FIREFOX_PROFILE` escolhe uma pasta de perfil existente e acessível; não contorna as permissões do sistema. Um caminho explícito inválido é informado como erro, sem escolher silenciosamente outro perfil.

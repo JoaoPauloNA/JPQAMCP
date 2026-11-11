@@ -393,8 +393,8 @@ export function resolverSessao({ url, aba, sessao = "auto" }) {
   const info = { modo: sessao, usada: false, aviso: "" };
   if (sessao === "nenhuma") return { url, info, copia: null };
   const perfil = perfilAtivo();
-  if (!perfil) { info.aviso = perfilAtivo.erro ?? "não encontrei o perfil do Firefox em uso"; return { url, info, copia: null }; }
-  let abas; try { abas = abasAbertas(perfil); } catch (e) { info.aviso = e.message; return { url, info, copia: null }; }
+  if (!perfil) { info.erro = perfilAtivo.codigoErro ? { codigo: perfilAtivo.codigoErro, mensagem: perfilAtivo.erro } : null; info.aviso = perfilAtivo.erro ?? "não encontrei o perfil do Firefox em uso"; return { url, info, copia: null }; }
+  let abas; try { abas = abasAbertas(perfil); } catch (e) { info.erro = { codigo: e.code ?? "SESSAO_ILEGIVEL", mensagem: "Não foi possível ler a sessão do Firefox: " + e.message }; info.aviso = info.erro.mensagem; return { url, info, copia: null }; }
   const r = localizarAba(abas, { url, trecho: aba });
   info.abasAbertas = abas.filter((a) => !/^(about|moz-extension|chrome):/.test(a.url)).length; info.motivo = r.motivo; info.candidatas = r.candidatas;
   if (!r.aba) { info.aviso = `${r.motivo}: o teste abre o endereço sem a sua sessão (se a página pedir login, abra-a logada no Firefox e rode de novo)`; return { url, info, copia: null }; }

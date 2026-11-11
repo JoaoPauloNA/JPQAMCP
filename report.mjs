@@ -21,7 +21,7 @@ export function relatorioQA(res) {
   const avisosHtml = [
     si && (si.usada
       ? `<div class="aviso ok">Sessão do seu Firefox usada: aba “${esc(si.aba.titulo)}” (janela ${si.aba.janela}, aba ${si.aba.aba}; ${esc(si.motivo)}). Cookies e dados do site foram copiados para instâncias temporárias, que são apagadas ao fim. Nenhum valor é gravado no relatório.</div>`
-      : ""),
+      : si.erro ? `<div class="aviso">Erro do MCP [${esc(si.erro.codigo)}]: ${esc(si.erro.mensagem)} O teste prosseguiu sem a sessão do usuário.</div>` : ""),
     ...(res.avisos ?? []).map((a) => `<div class="aviso">⚠ ${esc(a)}</div>`),
   ].filter(Boolean).join("");
   const eventos = [];

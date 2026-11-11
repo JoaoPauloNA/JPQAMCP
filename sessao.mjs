@@ -37,17 +37,32 @@ const arqSessao = (p) => ARQ_SESSAO.map((a) => join(p, a)).find((a) => existsSyn
 
 // perfil em uso: o de sessão gravada mais recentemente (o Firefox regrava a cada ~15 s)
 export function perfilAtivo() {
-  if (process.env.FIREFOX_PROFILE && existsSync(process.env.FIREFOX_PROFILE)) return process.env.FIREFOX_PROFILE;
+  perfilAtivo.erro = null;
+  perfilAtivo.codigoErro = null;
+  const falha = (e) => {
+    perfilAtivo.codigoErro = e.code ?? "PERFIL_INDISPONIVEL";
+    perfilAtivo.erro = ["EPERM", "EACCES"].includes(e.code)
+      ? "Acesso ao perfil do Firefox negado pelo sistema. Autorize a leitura para o aplicativo que inicia o MCP nas configurações de privacidade do sistema e reinicie esse aplicativo. FIREFOX_PROFILE apenas seleciona um perfil; não concede permissão."
+      : `Não foi possível acessar o perfil do Firefox: ${e.message}`;
+  };
+  if (process.env.FIREFOX_PROFILE) {
+    try {
+      const p = process.env.FIREFOX_PROFILE;
+      if (!statSync(p).isDirectory()) throw Object.assign(new Error("FIREFOX_PROFILE deve apontar para uma pasta"), { code: "ENOTDIR" });
+      readdirSync(p); // confirma o acesso, sem confiar em existsSync (que oculta EPERM)
+      return p;
+    } catch (e) { falha(e); return null; }
+  }
   let melhor = null, t = 0;
   for (const r of raizes()) {
     try {
-      if (!existsSync(r)) continue;
       for (const d of readdirSync(r)) {
         const p = join(r, d); const a = existsSync(join(p, "prefs.js")) && arqSessao(p);
         if (a && statSync(a).mtimeMs > t) { t = statSync(a).mtimeMs; melhor = p; }
       }
-    } catch (e) { perfilAtivo.erro = e.code === "EPERM" || e.code === "EACCES" ? "sem permissão para ler a pasta de perfis do Firefox (no macOS, dê acesso total ao disco ao app que roda o MCP ou defina FIREFOX_PROFILE)" : e.message; }
+    } catch (e) { if (e.code !== "ENOENT") falha(e); }
   }
+  if (melhor) { perfilAtivo.erro = null; perfilAtivo.codigoErro = null; }
   return melhor;
 }
 
